@@ -1,0 +1,154 @@
+# Product Requirements Document (PRD) — Revised Edition
+## Maply — AI-Assisted & Deterministic Conceptual Understanding Assessment Platform
+> **Catatan ruang lingkup:** Dokumen ini merapikan rancangan hasil Google Stitch. Integrasi SSO/SIAKAD, token/QR ujian, AI Pro, ekspor laporan akreditasi, dan remedial otomatis diperlakukan sebagai kebutuhan yang diusulkan, bukan fitur yang sudah tersedia. Status implementasi dan prioritas MVP perlu dikonfirmasi sebelum pengembangan.
+**Version:** 2.1 (Final Production Design Sync)
+**Platform:** Web Application (Responsive Desktop Focused)
+**Primary Domain:** Higher Education & Smart Learning Assessment
+**Target Audience:** Dosen / Pengajar & Mahasiswa / Pelajar
+**Design Reference & Aesthetic:** Tactile Editorial Architecture (Inspired by *zemi.ac* & *napkin.ai* — Bricolage Grotesque display typography, bold 2px crisp borders, tactile pill badges, warm subtle cream canvas `#fbf8fc`, vibrant accent colors: Cobalt Blue, Sunflower Amber, Mint Emerald, and Vermilion Rose).
+
+---
+
+# 1. Product Overview
+**Maply** adalah platform pembelajaran dan evaluasi kognitif berbasis web yang mengukur **pemahaman konseptual mendalam mahasiswa** melalui paradigma rekonstruksi peta konsep (*Kit-Build Concept Map*).
+
+Berbeda dari evaluasi konvensional (pilihan ganda, kuis hafalan, atau soal jawaban akhir) yang rentan terhadap tebakan beruntung (*lucky guess*) atau halusinasi teks, Maply menguji apakah mahasiswa benar-benar memahami **struktur proposisi dan hubungan relasional antar konsep** dalam suatu materi kurikulum berbasis luaran (*Outcome-Based Education / OBE*).
+
+### Paradigma Kit-Build:
+1. **Peta Acuan Pakar (Master Ground Truth):** Dosen menyusun representasi struktur pengetahuan valid melalui *Manual Builder* atau bantuan ekstraksi dokumen via *AI Concept Map Generator*.
+2. **Dekomposisi Otomatis (Kit Decomposition):** Sistem mengurai peta acuan menjadi kumpulan independen:
+   - **Baki Kepingan Konsep (*Nodes Kit*):** Simpul konsep acak siap seret.
+   - **Baki Label Tautan Relasi (*Relationship Kit*):** Kumpulan predikat/konektor bertaut.
+3. **Rekonstruksi Mandiri Mahasiswa (*Student Workspace*):** Mahasiswa menyusun ulang kepingan-kepingan tersebut di atas kanvas kosong sesuai pemahaman struktural mereka.
+4. **Evaluasi Deterministik Graf (NetworkX Engine):** Sistem membandingkan topologi graf mahasiswa terhadap graf acuan menggunakan pemodelan matematika eksak (*directed labeled graph matching*) tanpa campur tangan probabilitas LLM, menghasilkan skor kognitif objektif, identifikasi miskonsepsi, dan peta kesenjangan pengetahuan (*Knowledge Gap*).
+
+---
+
+# 2. Problem Statement
+1. **Ujian Konvensional Gagal Mengukur Pemahaman Struktural:** Mahasiswa dapat mengingat definisi bahwa *"ALU adalah bagian dari CPU"* tanpa mengerti bagaimana ALU bertukar data dengan Register atau dikontrol oleh Control Unit.
+2. **Dosen Butuh Diagnostik Presisi, Bukan Sekadar Angka Ujian:** Ujian pilihan ganda hanya memberikan nilai akhir (misal 70/100) tanpa memperlihatkan miskonsepsi relasional mana yang dialami seisi kelas.
+3. **Kompleksitas Penyusunan Asesmen Konsep:** Membuat peta konsep yang terstandarisasi membutuhkan waktu authoring yang lama bagi dosen jika dilakukan secara manual dari nol.
+4. **Friksi Akses Ujian Kelas/Lab:** Mahasiswa di ruang kelas atau laboratorium memerlukan akses instan tanpa birokrasi otentikasi yang rumit saat waktu ujian terbatas.
+
+---
+
+# 3. Core User Roles & Navigation Architecture
+Maply mengadopsi pemisahan peran yang tegas (*Role-Based Experience*):
+
+### 3.1 Portal Gerbang Masuk & Otentikasi
+- **Landing & Portal Masuk:** Edukasi interaktif paradigma Kit-Build untuk Dosen (Free Tier vs AI Pro) dan alur kerja Mahasiswa, verifikasi riset komputasi graf, serta gerbang login per peran.
+- **Login Mahasiswa (Student Portal):** Dukungan Single Sign-On (SSO Kampus) terintegrasi SIAKAD serta **Akses Kilat Ujian & Lab via Token/PIN 6-Karakter** tanpa login penuh.
+- **Login Dosen (Teacher Portal):** Akses otentikasi pengajar dengan otorisasi pengelolaan kelas, kurikulum OBE, dan lisensi authoring.
+
+### 3.2 Mahasiswa (Student Flow)
+Navigasi Utama:
+- **Dashboard:** Ringkasan capaian kognitif, **Akses sesi ujian melalui token/PIN cepat**, asesmen aktif, dan riwayat tugas.
+- **My Assessments:** Katalog asesmen terdaftar, status pengerjaan (*Tersedia, Sedang Dikerjakan, Selesai*), dan tenggat waktu.
+- **Concept Map Workspace:** Kanvas perakitan interaktif drag-and-drop kepingan konsep dan tautan relasi.
+- **Results & Feedback:** Skor Pemahaman Konseptual, rincian keabsahan proposisi (*Benar, Kurang/Missing, Salah/Miskonsepsi*), serta rekomendasi materi remedial terarah.
+
+### 3.3 Dosen / Pengajar (Teacher Flow)
+Navigasi Utama:
+- **Dashboard:** Metrik rombel aktif, status penyelesaian asesmen kelas, distribusi capaian OBE, dan jalan pintas pembuatan modul.
+- **My Courses:** Pengelolaan mata kuliah dan rombongan belajar (sinkronisasi SIAKAD).
+- **Concept Maps:** Pustaka Master Ground Truth, *Manual Builder* (Free Tier), dan *AI Concept Map Generator* (AI Pro Tier).
+- **Assessments:** Manajemen asesmen terbit, log token ujian, monitoring progres kelas langsung, dan **Wizard Pembuatan Asesmen 4-Langkah**.
+- **Analytics:** Analisis Kesenjangan Pengetahuan Kelas (*Class Knowledge Gap Map*), matriks kebingungan proposisi, dan ekspor laporan akreditasi kurikulum.
+
+---
+
+# 4. Wizard Pembuatan Asesmen Terstruktur (4-Step Assessment Creation Flow)
+Alur pembuatan asesmen bagi dosen dirancang melalui sistem wizard multi-langkah taktil yang seragam, memastikan setiap aspek pedagogis terkonfigurasi dengan tepat sebelum diterbitkan ke kelas:
+
+```
+[01. Target Kelas & Info] → [02. Pilih Master & Kit] → [03. Toleransi & Bobot] → [04. Jadwal & Publikasi (Token)]
+```
+
+### Langkah 1: Target Kelas & Info Akademik
+- **Pemilihan Kelas & Rombel Kuliah:** Dropdown rombel tersinkronisasi SIAKAD (misal: *Arsitektur Komputer - Kelas B, 42 Mahasiswa*).
+- **Identitas & Tag Modul Asesmen:** Judul modul lengkap, tag taktil kustom (`#Formatif`, `#Midterm-CPL3`, `#KitBuild-Rescoring`).
+- **Petunjuk Perakitan Mahasiswa:** Editor instruksi pengerjaan yang akan ditampilkan pada panel pengantar dan modal pengerjaan mahasiswa.
+- **Tipe Moda Pelaksanaan:**
+  1. *Mode Ujian Terjadwal:* Batasan waktu ketat, pengawasan antarmuka, dan sinkronisasi nilai akhir.
+  2. *Latihan Mandiri Formatif:* Pengerjaan bebas tanpa tekanan waktu dengan umpan balik instan (*scaffolding*).
+  3. *Kuis Diagnostik Kilat:* Identifikasi awal miskonsepsi prasyarat materi sebelum perkuliahan dimulai.
+- **Pedoman RPS & Panduan Perumusan:** Panel rujukan Capaian Pembelajaran Lulusan (CPL) dan tips instruksi bebas bias kanvas.
+
+### Langkah 2: Pemilihan Master Map & Dekomposisi Kit
+- **Katalog Master Ground Truth:** Pemilihan graf acuan terverifikasi dosen (contoh: *CPU & Memory Hierarchy Architecture - 14 Nodes, 17 Relasi Labeled*).
+- **Live Kit Decomposition Simulator:** Pratinjau waktu-nyata pembongkaran graf acuan menjadi:
+  - *Baki Kepingan Konsep (Concept Nodes)*: CPU, ALU, Control Unit, Register Bank, Cache, dll.
+  - *Baki Label Tautan Relasi (Relationship Labels)*: contains, transfers data to, interacts with, dll.
+- **Manipulasi Kognitif:**
+  - Opsi *Acak Posisi Kepingan* di baki mahasiswa.
+  - Opsi *Sertakan Node Pengecoh (Distractor Nodes)* untuk menguji diskriminasi konsep mahasiswa tingkat lanjut.
+
+### Langkah 3: Aturan Toleransi Arah Relasi & Distribusi Bobot OBE
+- **Toleransi Arah Simetris (Directional Tolerance Setting):**
+  - Mengizinkan relasi dwiarah/komutatif (seperti `connected to`, `interacts with`, `communicates via`) dibalik arahnya oleh mahasiswa tanpa penalti ganda (tidak dihitung False Positive sekaligus False Negative).
+  - Mempertahankan aturan ketat untuk relasi hierarki/kausalitas (seperti `contains`, `controls`, `sends data to`).
+- **Distribusi Bobot Penilaian Kognitif (Total 100%):**
+  - **Presensi Konsep (20%):** Proporsi kepingan konsep master yang berhasil diletakkan pada lembar kerja.
+  - **Akurasi Proposisi Triples (50%):** Ketepatan pasangan relasi `<Subjek, Predikat, Objek>`.
+  - **Topologi & Hierarki (30%):** Kedalaman sentralitas graf (*degree centrality*) dan hierarki percabangan.
+- **Ambang Kelulusan Kognitif (Passing Grade):** Nilai batas penguasaan materi (default: 75/100) serta penanda otomatis mahasiswa terdampak miskonsepsi.
+
+### Langkah 4: Jadwal, Kebijakan Rilis & Token Akses / PIN Cepat
+- **Akses Token Ujian / PIN Cepat Instan:**
+  - Pembuatan kode alfanumerik unik 6-karakter (misal: **`KBT-9428`**) untuk akses ujian langsung di kelas/lab tanpa login SSO yang lama.
+  - Dilengkapi tombol *Salin Token*, *Acak Ulang*, dan *QR Code Sesi Ujian*.
+  - Kebijakan token: *Wajib untuk semua mahasiswa* vs *Opsional (Rombel resmi via SSO / Tamu via PIN)*.
+  - Masa berlaku token yang otomatis hangus saat sesi ujian ditutup.
+- **Pratinjau Sisi Mahasiswa:** Simulator tampilan mahasiswa saat memasukkan PIN di portal gerbang masuk.
+- **Durasi Timer & Batas Percobaan:** Pengaturan batas waktu pengerjaan (misal: 45 Menit) dan frekuensi pengerjaan (*1x Sesi Resmi + 1x Remedial Terjadwal*).
+- **Jendela Akses Ujian:** Tanggal & jam mulai serta tenggat pengumpulan (*Deadline*), dengan opsi *Grace Period (+15 Menit)*.
+- **Kebijakan Rilis Hasil Kognitif:**
+  - *Rilis Serentak Pasca-Tenggat (Rekomendasi Ujian):* Menahan skor dan kunci peta hingga seluruh rombel selesai untuk mencegah kebocoran jawaban.
+  - *Instan Setelah Kirim:* Untuk keperluan latihan formatif mandiri.
+  - *Rilis Manual Dosen:* Nilai dirilis setelah dosen meninjau analisis miskonsepsi kelas.
+- **Audit Otomatis & Publikasi:** Validasi kelayakan graf NetworkX sebelum tombol CTA puncak **`Publikasikan Asesmen & Terbitkan Token 🚀`** diaktifkan.
+
+---
+
+# 5. Fitur Ruang Kerja Mahasiswa (Student Concept Map Workspace)
+- **Baki Kepingan Taktil:** Daftar konsep di panel samping siap seret (*drag-and-drop*) ke kanvas utama.
+- **Interaksi Kanvas Fleksibel:** Kemudahan menarik garis relasi antar simpul konsep, memilih label tautan dari baki relasi, serta menghapus koneksi yang keliru.
+- **Countdown Timer & Token Gateway:** Penghitung mundur waktu ujian yang melayang serta indikator status sinkronisasi otomatis draf kanvas.
+- **Pemeriksaan Mandiri Sebelum Kirim (*Pre-submit Check*):** Peringatan simpul terisolasi (*isolated nodes*) atau relasi tanpa label sebelum submit final.
+
+---
+
+# 6. Mesin Evaluasi Graf & Format Umpan Balik (NetworkX Engine)
+Evaluasi graf dijalankan secara deterministik pada backend Python FastAPI menggunakan NetworkX:
+
+### 6.1 Metrik Evaluasi Matematis
+- **True Positive (TP):** Proposisi `<Asal, Label, Tujuan>` yang sesuai dengan peta master acuan (memperhitungkan aturan toleransi arah yang aktif).
+- **False Positive (FP):** Proposisi yang dibuat mahasiswa namun tidak ada dalam peta master acuan (miskonsepsi baru).
+- **False Negative (FN):** Proposisi yang ada dalam peta master acuan namun gagal dibentuk mahasiswa (*missing link*).
+- **Precision:** $\frac{TP}{TP + FP}$
+- **Recall:** $\frac{TP}{TP + FN}$
+- **F1-Score:** $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$
+
+### 6.2 Formula Skor Pemahaman Konseptual
+$$\text{Skor Akhir} = (W_c \times \text{Presensi Konsep}) + (W_p \times \text{Akurasi Proposisi}) + (W_t \times \text{Topologi})$$
+*(Default: $W_c = 0.20, W_p = 0.50, W_t = 0.30$)*
+
+### 6.3 Umpan Balik & Rekomendasi Remedial Mahasiswa
+- **Visual Graph Difference:** Peta hasil dengan kode warna taktil (Hijau = Benar, Merah = Miskonsepsi, Garis Putus Abu-abu = Proposisi Terlewat).
+- **Analisis Kesenjangan:** Penjelasan verbal mengapa hubungan tertentu salah (misal: *"ALU melakukan pemrosesan, sedangkan penyimpanan sementara dilakukan oleh Register"*).
+- **Rekomendasi Remedial:** Tautan bahan bacaan mikro (3–5 menit) dan aktivasi kesempatan pengerjaan ulang (*Attempt 2*).
+
+---
+
+# 7. Analisis Kelas & Peta Kesenjangan Pengetahuan (Teacher Analytics)
+- **Class Knowledge Map:** Visualisasi graf agregat seluruh kelas yang menampilkan persentase akurasi pada tiap proposisi. Dosen dapat langsung melihat tautan dengan tingkat kesalahan tinggi (misal: tautan `Register → Memory` hanya dijawab benar oleh 37% mahasiswa).
+- **Distribusi Skor & Kurva OBE:** Pengelompokan mahasiswa berdasarkan ambang kelulusan kognitif.
+- **Tindak Lanjut & Intervensi:** Opsi membuat materi penegasan untuk topik tertentu atau menerbitkan kuis verifikasi cepat 3-menit bagi mahasiswa yang berada di bawah ambang penguasaan konsep.
+
+---
+
+# 8. Spesifikasi Teknis & Desain Visual
+- **Frontend:** Next.js, TypeScript, Tailwind CSS, Bricolage Grotesque Display Typeface, JetBrains Mono untuk metrik token/kode, React Flow / SVG Canvas Engine.
+- **Backend & Graph Engine:** FastAPI (Python 3.11), SQLAlchemy, PostgreSQL / Supabase, NetworkX 3.2.
+- **AI Authoring Service (AI Pro):** LLM API dengan Structured JSON Schema Output untuk ekstraksi silabus/PDF menjadi draft graf.
+- **Aset & Identitas Visual:** Garis border 2px tegas (`#1b1b1e`), bayangan taktil timbul `shadow-[3px_3px_0px_#1b1b1e]`, dot-grid hangat, dan palet warna energetik Zemi.ac.
