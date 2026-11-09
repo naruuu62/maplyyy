@@ -1,4 +1,4 @@
-import {
+﻿import {
   MasterConceptMap,
   AssessmentConfig,
   ConceptKit,
@@ -12,20 +12,18 @@ import {
 } from '../types/maply';
 
 export function getApiBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+  if (envUrl) {
     return envUrl.replace(/\/+$/, '');
   }
-  // If running in browser and domain is NOT localhost (e.g. *.vercel.app), default to Render backend
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return 'https://maply-api-39cp.onrender.com/api/v1';
-  }
-  return (envUrl || 'http://localhost:8000/api/v1').replace(/\/+$/, '');
+
+  return 'https://maply-api.vercel.app/api/v1';
 }
 
 export const INITIAL_MASTER_MAP: MasterConceptMap = {
   id: 'map-cpu-1',
-  title: 'Arsitektur Komputer — Komponen CPU',
+  title: 'Arsitektur Komputer â€” Komponen CPU',
   description: 'Peta konsep acuan struktur CPU, ALU, Control Unit, Register, dan Memory.',
   course_id: 'course-cs101',
   nodes: [
@@ -207,6 +205,20 @@ export async function fetchAssessment(asmId: string = 'asm-1'): Promise<Assessme
   return INITIAL_ASSESSMENT;
 }
 
+
+export async function createAssessment(config: AssessmentConfig): Promise<AssessmentConfig> {
+  const res = await fetch(`${getApiBaseUrl()}/assessments`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(config)
+  });
+
+  if (!res.ok) {
+    throw new Error(await readError(res));
+  }
+
+  return await res.json();
+}
 export async function updateAssessment(config: AssessmentConfig): Promise<AssessmentConfig> {
   const res = await fetch(`${getApiBaseUrl()}/assessments/${config.id}`, {
     method: 'PUT',
@@ -354,3 +366,4 @@ export async function generateAIDraft(topic: string, materialText: string): Prom
   if (!res.ok) throw new Error(await readError(res));
   return await res.json();
 }
+
